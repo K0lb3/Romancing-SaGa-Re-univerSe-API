@@ -182,7 +182,7 @@ class APIHigh(API):
                     sleep(0.5)
                     # api.maintenance_status()
                     sleep(1)
-                    self.shop_stamina_item(1000840015, 21)
+                    self.shop_stamina_item(STAMINA_POT, STAMINA_POT_REFRESH_COUNT)
                     print("Stam Refreshed")
             except:
                 print()
