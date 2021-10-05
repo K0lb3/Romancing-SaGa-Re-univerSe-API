@@ -178,7 +178,7 @@ class APIHigh(API):
             return res_atk
         else:
             try:
-                if res_atk["changed_resources"]["player"]["stamina"] < 10:
+                if res_atk["changed_resources"]["player"]["stamina"] < 50:
                     sleep(0.5)
                     # api.maintenance_status()
                     sleep(1)
