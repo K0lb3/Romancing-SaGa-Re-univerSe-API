@@ -133,6 +133,7 @@ class APIHigh(API):
     def conquest_multi(self, area_id: int = None, party_number: int = 1):
         # TODO - other conquests without multi
         field_map_quests = get_master("FieldMapQuest")
+        faillist = []
         while True:
             print("fetching conquest info")
             res = self.quest_field_map_list()
@@ -154,7 +155,7 @@ class APIHigh(API):
                     None,
                     0,
                     100,
-                ]:
+                ] and node["field_map_node_id"] not in faillist:
                     for quest_id, quest in field_map_quests.items():
                         if quest["field_map_node_id"] == node["field_map_node_id"]:
                             print("Found", quest_id)
@@ -165,12 +166,10 @@ class APIHigh(API):
                 print("No bonus node found")
                 return
 
+            fails = 0
             while True:
                 quest_result = self.quest(quest_id, party_number)
-                if quest_result["field_map_result"]:
-                    print(quest_result["field_map_result"]["domination_rate"])
-                    if quest_result["field_map_result"]["domination_rate"] == 100:
-                        break
+                
                 try:
                     if quest_result["changed_resources"]["player"]["stamina"] < 10:
                         sleep(0.5)
@@ -180,6 +179,17 @@ class APIHigh(API):
                         print("Stam Refreshed")
                 except:
                     print()
+                
+                if quest_result["field_map_result"]:
+                    print(quest_result["field_map_result"]["domination_rate"])
+                    if quest_result["field_map_result"]["domination_rate"] == 100:
+                        break
+                if quest_result["battle"]["latest_turn_result"] in ["loss","lost"]:
+                    fails +=1
+                    if fails == 5:
+                        faillist.append("field_map_node_id")
+                        break
+
 
     def quest(self, quest_id: int = 0, party_number: int = 1, repeat: int = 0):
         print("Create battle", repeat)
