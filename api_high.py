@@ -80,7 +80,57 @@ class APIHigh(API):
         else:
             self.stamina_potions[0][1] -= use
 
-    def conquest(self, area_id: int = None, party_number: int = 1):
+    def conquest_single(self, area_id: int = None, party_number: int = 1):
+        # TODO - other conquests without multi
+        field_map_quests = get_master("FieldMapQuest")
+        while True:
+            print("fetching conquest info")
+            res = self.quest_field_map_list()
+            for area in res["areas"]:
+                if area["area_id"] == area_id or not area_id:
+                    break
+            else:
+                print("Couldn't find the requested area")
+                return 1
+
+            print("fetching conquest nodes")
+            field_map_group_id = area["solo"]["field_map_group_id"]
+            field_map_group = self.quest_field_map_info(field_map_group_id)
+
+            print("Looking for uncleared nodes")
+            quest_id = None
+            for node in field_map_group["field_map_data"]["nodes"]:
+                if node["is_accessible"] and node["domination_rate"] not in [
+                    None,
+                    100,
+                ]:
+                    for quest_id, quest in field_map_quests.items():
+                        if quest["field_map_node_id"] == node["field_map_node_id"]:
+                            print("Found", quest_id)
+                            break
+                    if quest_id:
+                        break
+            if quest_id == None:
+                print("No bonus node found")
+                return
+
+            while True:
+                quest_result = self.quest(quest_id, party_number)
+                if quest_result["field_map_result"]:
+                    print(quest_result["field_map_result"]["domination_rate"])
+                    if quest_result["field_map_result"]["domination_rate"] == 100:
+                        break
+                try:
+                    if quest_result["changed_resources"]["player"]["stamina"] < 10:
+                        sleep(0.5)
+                        # api.maintenance_status()
+                        sleep(1)
+                        self.shop_stamina_item(STAMINA_POT, STAMINA_POT_REFRESH_COUNT)
+                        print("Stam Refreshed")
+                except:
+                    print()
+
+    def conquest_multi(self, area_id: int = None, party_number: int = 1):
         # TODO - other conquests without multi
         field_map_quests = get_master("FieldMapQuest")
         while True:
@@ -144,6 +194,7 @@ class APIHigh(API):
         while True:
             print("Attack", end="\t")
             res_atk = self.quest_attack(commands=[], auto_battle_type=3)
+            self.quest_status()
             t += 1
             # sleep some time according to res_atk
             if res_atk.get("code", 0) == 4022:

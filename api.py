@@ -139,6 +139,16 @@ class API:
         return self.request(
             "/shop/stamina/item", {"item_id": item_id, "quantity": quantity}
         )
+    
+    def gacha_list(self):
+        return self.request(
+            "/gacha/list"
+        )
+    
+    def gacha_deck_list(self, gacha_id: int):
+        return self.request(
+            "/gacha/deck/list", {"gacha_id":gacha_id}
+        )
 
     def request(self, path, data: dict = {}):
         # check if token is still valid
