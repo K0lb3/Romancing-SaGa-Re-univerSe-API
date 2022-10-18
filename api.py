@@ -110,19 +110,28 @@ class API:
             },
         )
 
-    def quest_create(self, quest_id: int, party_number: int):
+    def quest_create(self, quest_id: int, party_number: int, battle_id: int = None):
+        args = {"quest_id": quest_id, "party_number": party_number, "auto_rematch": False}
+        if battle_id:
+            args["battle_id"] = battle_id
         return self.request(
-            "/quest/create", {"quest_id": quest_id, "party_number": party_number}
+            "/quest/create", args
         )
 
     def quest_attack(self, commands: list = [], auto_battle_type: int = 0):
         return self.request(
             "/quest/attack",
-            {"commands": commands, "auto_battle_type": auto_battle_type},
+            {"commands": commands, "auto_battle_type": auto_battle_type, "active_auto_rematch": False},
         )
 
     def quest_status(self):
         return self.request("/quest/status")
+
+    def quest_retry(self):
+        return self.request("/quest/retry")
+
+    def quest_retire(self):
+        return self.request("/quest/retire")
 
     def quest_field_map_list(self):
         return self.request("/quest/field_map/list")

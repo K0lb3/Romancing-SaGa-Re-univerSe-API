@@ -36,6 +36,10 @@ def get_skill_duration(skill_id: int):
         encoding="utf8",
     ) as f:
         track = json.load(f)
+        clips = track.get("m_Clips", [])
+        if len(clips) == 0:
+            skill_cache[skill_id] = 2
+            return 2
         entry = track["m_Clips"][-1]
 
     duration = entry["m_Start"] + entry["m_Duration"]
